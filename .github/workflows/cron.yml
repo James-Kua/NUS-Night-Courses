@@ -1,8 +1,9 @@
 name: Update Night Courses
 
 on:
-  schedule:
-    - cron: '0 0 14,31 * *'
+  push:
+    branches:
+      - main
 
 jobs:
   update:
