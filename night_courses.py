@@ -3,7 +3,7 @@ import aiohttp
 import requests
 import time
 from datetime import datetime
-from fpdf import FPDF
+from openpyxl import Workbook
 
 # All lecture types
 lectureLessonTypes = [
@@ -45,45 +45,37 @@ async def process_modules(modules):
                     all_tutorial = [lesson for lesson in semester['timetable'] if lesson['lessonType'] in tutorialLessonTypes]
                     filtered_tutorial = [lesson for lesson in semester['timetable'] if int(lesson['startTime']) >= 1800 and lesson['lessonType'] in tutorialLessonTypes]
                     if (not all_lectures or any(filtered_lectures)) and (not all_tutorial or any(filtered_tutorial)) and (any(all_lectures) or any(all_tutorial)):
-                        night_courses_by_semester[semester['semester']].append(f"{result['moduleCode']} [{result['moduleCredit']} Units]: {result['title']}")
-
-
+                        night_courses_by_semester[semester['semester']].append([result['moduleCode'], result['moduleCredit'], result['title']])
     return night_courses_by_semester
 
-def print_courses_by_semester(courses_by_semester):
-    for semester, courses in courses_by_semester.items():
-        print(f"Semester {semester}: {len(courses)} courses")
-        for course in courses:
-            print(course)
-        print()
+def create_worksheet(workbook, semester, courses):
+    worksheet = workbook.create_sheet(title=f"Semester {semester}")
+    worksheet['A1'] = 'Code'
+    worksheet['B1'] = 'Units'
+    worksheet['C1'] = 'Name'
 
-def export_to_pdf(courses_by_semester):
-    today = datetime.now().strftime("%d_%b")
-    outputFile = f"NUS_Night_Courses_CAA_{today}.pdf"
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    for semester, courses in courses_by_semester.items():
-        pdf.add_page()
-        pdf.set_font("Arial", size=9)
-        pdf.cell(200, 10, f"Semester {semester}: {len(courses)} courses", ln=True, align="C")
-        pdf.ln(10)
-        for course in courses:
-            try:
-                course = course.encode("ascii", "ignore").decode("ascii")
-                pdf.multi_cell(0, 10, course)
-                pdf.ln(5)
-            except Exception as e:
-                print(f"Error encoding course: {e}")
-    pdf.output(outputFile)
+    for idx, course_info in enumerate(courses, start=2):
+        module_code, credit_units, course_name = course_info
+        worksheet.cell(row=idx, column=1, value=module_code.strip())
+        worksheet.cell(row=idx, column=2, value=float(credit_units.strip()))
+        worksheet.cell(row=idx, column=3, value=course_name.strip())
 
 async def main():
     response = requests.get('https://api.nusmods.com/v2/2023-2024/moduleInfo.json')
     data = response.json()
     courses_by_semester = await process_modules(data)
-    print_courses_by_semester(courses_by_semester)
-    export_to_pdf(courses_by_semester)
+
+    workbook = Workbook()
+    for semester, courses in courses_by_semester.items():
+        create_worksheet(workbook, semester, courses)
+
+    today = datetime.now().strftime("%d_%b")
+    output_file = f"NUS_Night_Courses_CAA_{today}.xlsx"
+    del workbook['Sheet']
+    workbook.save(output_file)
 
 if __name__ == "__main__":
     start_time = time.time()
     asyncio.run(main())
     print("--- %s seconds ---" % (time.time() - start_time))
+
