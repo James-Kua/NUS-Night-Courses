@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v3
@@ -25,13 +25,11 @@ jobs:
       - name: Run python file
         run: python night_courses.py
 
-      - name: Add changes
-        run: git add .
-
-      - name: Commit changes
-        run: git commit -m "Update night courses [skip ci]"
-
       - name: Push changes
         run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "Update night courses [skip ci]"
           git push
 
