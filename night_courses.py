@@ -23,8 +23,8 @@ tutorialLessonTypes = [
     'Workshop'
 ]
 
-async def fetch_course(session, moduleCode):
-    url = f"https://api.nusmods.com/v2/2023-2024/modules/{moduleCode}.json"
+async def fetch_course(session, moduleCode, academic_year):
+    url = f"https://api.nusmods.com/v2/{academic_year}/modules/{moduleCode}.json"
     async with session.get(url) as response:
         try:
             return await response.json()
@@ -32,10 +32,10 @@ async def fetch_course(session, moduleCode):
             print(f"Error processing module {moduleCode}: {e}")
             return None
 
-async def process_modules(modules):
+async def process_modules(modules, academic_year):
     night_courses_by_semester = {1: [], 2: [], 3: [], 4: []}
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch_course(session, module['moduleCode']) for module in modules]
+        tasks = [fetch_course(session, module['moduleCode'], academic_year) for module in modules]
         results = await asyncio.gather(*tasks)
         for result in results:
             if result:
@@ -61,16 +61,17 @@ def create_worksheet(workbook, semester, courses):
         worksheet.cell(row=idx, column=3, value=course_name.strip())
 
 async def main():
-    response = requests.get('https://api.nusmods.com/v2/2023-2024/moduleInfo.json')
+    academic_year = '2023-2024'
+    response = requests.get(f'https://api.nusmods.com/v2/{academic_year}/moduleInfo.json')
     data = response.json()
-    courses_by_semester = await process_modules(data)
+    courses_by_semester = await process_modules(data, academic_year)
 
     workbook = Workbook()
     for semester, courses in courses_by_semester.items():
         create_worksheet(workbook, semester, courses)
 
     today = datetime.now().strftime("%d_%b")
-    output_file = f"NUS_Night_Courses_CAA_{today}.xlsx"
+    output_file = f"NUS_Night_Courses_{academic_year}_CAA_{today}.xlsx"
     del workbook['Sheet']
     workbook.save(output_file)
 
