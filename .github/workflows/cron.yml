@@ -1,0 +1,32 @@
+name: Update Night Courses
+
+on:
+  schedule:
+    - cron: '0 0 14,31 * *'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        pip install aiohttp requests openpyxl
+
+    - name: Run python file
+      run: python night_courses.py
+
+    - name: Upload generated file
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+        directory: . 
