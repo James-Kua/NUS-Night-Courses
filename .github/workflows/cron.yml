@@ -10,24 +10,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.x'
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
 
-    - name: Install dependencies
-      run: |
-        pip install aiohttp requests openpyxl
+      - name: Install dependencies
+        run: |
+          pip install aiohttp requests openpyxl
 
-    - name: Run python file
-      run: python night_courses.py
+      - name: Run python file
+        run: python night_courses.py
 
-    - name: Upload generated file
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: main
-        directory: . 
+      - name: Add changes
+        run: git add .
+
+      - name: Commit changes
+        run: git commit -m "Update night courses [skip ci]"
+
+      - name: Push changes
+        run: |
+          git push
+
