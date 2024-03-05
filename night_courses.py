@@ -60,6 +60,41 @@ def create_worksheet(workbook, semester, courses):
         worksheet.cell(row=idx, column=2, value=float(credit_units.strip()))
         worksheet.cell(row=idx, column=3, value=course_name.strip())
 
+def generate_html(courses_by_semester):
+    html_content = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>NUS Night Courses</title>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <h1>NUS Night Courses</h1>
+    """
+    for semester, courses in courses_by_semester.items():
+        html_content += f"<h2>Semester {semester}</h2>"
+        html_content += f"<div class=\"table-container\">"
+        html_content += "<table border='1'><tr><th>Code</th><th>Units</th><th>Name</th></tr>"
+        for course_info in courses:
+            module_code, credit_units, course_name = course_info
+            html_content += f"<tr><td>{module_code}</td><td>{credit_units}</td><td>{course_name}</td></tr>"
+        html_content += "</table>"
+        html_content += "</div>"
+    
+    html_content += """
+    </body>
+    </html>
+    """
+
+    return html_content
+
+def write_html_file(html_content):
+    with open("index.html", "w") as file:
+        file.write(html_content)
+
 async def main():
     academic_year = '2023-2024'
     response = requests.get(f'https://api.nusmods.com/v2/{academic_year}/moduleInfo.json')
@@ -74,6 +109,9 @@ async def main():
     output_file = f"NUS_Night_Courses_{academic_year}_CAA_{today}.xlsx"
     del workbook['Sheet']
     workbook.save(output_file)
+
+    html_content = generate_html(courses_by_semester)
+    write_html_file(html_content)
 
 if __name__ == "__main__":
     start_time = time.time()
