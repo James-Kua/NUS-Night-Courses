@@ -1,20 +1,18 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: system-ui, Arial, sans-serif;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
 }
 
 h2 {
-  margin-top: 30px;
   text-align: center;
 }
 
 .table-container {
   margin: 0 auto;
-  width: 80%; 
+  width: 90%; 
   max-height: 420px;
   overflow-y: auto;
   margin-bottom: 20px;
@@ -33,6 +31,9 @@ th, td {
 
 th {
   background-color: #f2f2f2;
+  position: sticky;
+  top: -0.5px;
+  z-index: 1;
 }
 
 tr:nth-child(even) {
@@ -40,5 +41,6 @@ tr:nth-child(even) {
 }
 
 a {
+  color: blue;
   text-decoration: none;
 }
