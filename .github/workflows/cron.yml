@@ -33,6 +33,12 @@ jobs:
           git commit -m "Update night courses [skip ci]"
           git push
 
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        with:
+          separator: "   "
+
       - name: Set current datetime as env variable
         env:
           TZ: 'Asia/Singapore'
