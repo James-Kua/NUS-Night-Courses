@@ -17,9 +17,12 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Remove old excel file
+        run: rm -f *.xlsx
+
       - name: Install dependencies
         run: |
-          pip install aiohttp requests openpyxl
+          pip install -r requirements.txt
 
       - name: Run python file
         run: python night_courses.py
